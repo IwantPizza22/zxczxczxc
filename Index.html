@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ДраПончики — самые пузатые пончики в городе</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink-bg: #FBCFE8;
+    --pink-bg-deep: #F9A8D4;
+    --fuchsia: #DB2777;
+    --fuchsia-soft: #EC4899;
+    --teal: #22B8B0;
+    --teal-deep: #0E8A83;
+    --cream: #FFFBF5;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background: var(--pink-bg);
+    color:#3A2233;
+    overflow-x:hidden;
+  }
+  .font-display{ font-family:'Baloo 2', sans-serif; }
+
+  /* soft blobby background pattern */
+  .bg-sprinkles{
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255,255,255,0.55) 0 6px, transparent 7px),
+      radial-gradient(circle at 82% 8%, rgba(255,255,255,0.5) 0 5px, transparent 6px),
+      radial-gradient(circle at 68% 42%, rgba(255,255,255,0.4) 0 4px, transparent 5px),
+      radial-gradient(circle at 30% 70%, rgba(255,255,255,0.45) 0 6px, transparent 7px),
+      radial-gradient(circle at 92% 65%, rgba(255,255,255,0.4) 0 5px, transparent 6px),
+      radial-gradient(circle at 6% 88%, rgba(255,255,255,0.45) 0 5px, transparent 6px);
+    background-repeat:no-repeat;
+  }
+
+  .puffy-shadow{
+    box-shadow: 0 18px 0 -6px rgba(219,39,119,0.10), 0 24px 40px -10px rgba(219,39,119,0.25);
+  }
+  .puffy-shadow-teal{
+    box-shadow: 0 18px 0 -6px rgba(14,138,131,0.10), 0 24px 40px -10px rgba(14,138,131,0.28);
+  }
+
+  .glass{
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* header shrink on scroll handled via JS toggling this class */
+  header.shrink{
+    padding-top:0.5rem;
+    padding-bottom:0.5rem;
+  }
+
+  /* hero blobs float */
+  @keyframes floaty{
+    0%,100%{ transform: translateY(0) rotate(var(--r,0deg)); }
+    50%{ transform: translateY(-16px) rotate(var(--r,0deg)); }
+  }
+  .floaty{ animation: floaty 5.5s ease-in-out infinite; }
+
+  @keyframes floaty-slow{
+    0%,100%{ transform: translateY(0) rotate(var(--r,0deg)); }
+    50%{ transform: translateY(-10px) rotate(calc(var(--r,0deg) + 4deg)); }
+  }
+  .floaty-slow{ animation: floaty-slow 7s ease-in-out infinite; }
+
+  /* hero title reveal */
+  @keyframes riseIn{
+    0%{ opacity:0; transform: translateY(28px) scale(.96); }
+    100%{ opacity:1; transform: translateY(0) scale(1); }
+  }
+  .rise-in{ animation: riseIn .9s cubic-bezier(.2,.9,.25,1) both; }
+
+  /* wiggle for dragon on hover */
+  @keyframes wiggle{
+    0%,100%{ transform: rotate(0deg); }
+    25%{ transform: rotate(-4deg); }
+    75%{ transform: rotate(4deg); }
+  }
+  .wiggle-on-hover:hover{ animation: wiggle .5s ease-in-out; }
+
+  /* donut fan */
+  .donut-card{
+    transition: transform .45s cubic-bezier(.2,.9,.25,1), box-shadow .45s ease;
+  }
+
+  /* confetti */
+  .confetti-piece{
+    position: fixed;
+    top: 0; left: 0;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform, opacity;
+  }
+
+  /* section divider blob */
+  .blob-divider{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+
+  ::selection{ background: var(--fuchsia-soft); color:white; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar{ width:12px; }
+  ::-webkit-scrollbar-track{ background: var(--pink-bg); }
+  ::-webkit-scrollbar-thumb{ background: var(--teal); border-radius:20px; border:3px solid var(--pink-bg); }
+
+  @media (prefers-reduced-motion: reduce){
+    .floaty, .floaty-slow, .rise-in, .wiggle-on-hover:hover{ animation:none !important; }
+  }
+
+  a:focus-visible, button:focus-visible{
+    outline: 3px solid var(--teal-deep);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body class="bg-sprinkles">
+
+<!-- ===================== HEADER ===================== -->
+<header id="site-header" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
+  <div class="glass mx-3 mt-3 rounded-3xl px-5 py-3 flex items-center justify-between shadow-lg shadow-pink-900/5 border border-white/60">
+
+    <!-- Logo + dragon -->
+    <a href="#top" class="flex items-center gap-2 group">
+      <div id="header-dragon-wrap" class="relative cursor-pointer select-none shrink-0">
+        <!-- ЗАМЕНИТЕ src на путь/URL своего фото дракона -->
+        <img id="header-dragon" src="https://placehold.co/120x120/7DD8D3/2D3B3A?text=Фото" alt="Дракончик ДраПончики"
+             class="w-11 h-11 md:w-12 md:h-12 rounded-full object-cover border-2 border-white/80 wiggle-on-hover">
+      </div>
+      <span class="font-display font-extrabold text-xl md:text-2xl leading-none">
+        <span style="color:var(--fuchsia)">Дра</span><span style="color:var(--teal-deep)">Пончики</span>
+      </span>
+    </a>
+
+    <!-- nav -->
+    <nav class="hidden md:flex items-center gap-7 font-display font-semibold text-[#3A2233]/80">
+      <a href="#about" class="hover:text-[var(--fuchsia)] transition-colors">О нас</a>
+      <a href="#products" class="hover:text-[var(--fuchsia)] transition-colors">Пончики</a>
+      <a href="#locations" class="hover:text-[var(--fuchsia)] transition-colors">Где найти</a>
+    </nav>
+
+    <a href="#products" class="shrink-0 font-display font-bold text-xs sm:text-sm md:text-base px-3 py-2 sm:px-4 md:px-5 md:py-2.5 rounded-full text-white transition-transform hover:scale-105 active:scale-95 whitespace-nowrap" style="background: var(--fuchsia); box-shadow: 0 6px 0 var(--fuchsia-soft), 0 10px 18px -4px rgba(219,39,119,0.5);">
+      Хочу пончик
+    </a>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-32 pb-20 px-5 md:px-12 overflow-hidden">
+
+  <!-- floating donuts background -->
+  <svg class="absolute w-20 h-20 md:w-28 md:h-28 top-[18%] left-[6%] floaty" style="--r:-8deg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#F9A8D4"/><circle cx="50" cy="50" r="18" fill="#FBCFE8"/></svg>
+  <svg class="absolute w-16 h-16 md:w-24 md:h-24 top-[65%] left-[10%] floaty-slow" style="--r:10deg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#7DD8D3"/><circle cx="50" cy="50" r="18" fill="#E6FFFB"/></svg>
+  <svg class="absolute w-14 h-14 md:w-20 md:h-20 top-[10%] right-[10%] floaty" style="--r:14deg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#F5A65B"/><circle cx="50" cy="50" r="18" fill="#FFF1DC"/></svg>
+  <svg class="absolute w-24 h-24 md:w-32 md:h-32 bottom-[8%] right-[8%] floaty-slow" style="--r:-12deg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#EC4899"/><circle cx="50" cy="50" r="18" fill="#FCE7F3"/></svg>
+
+  <div class="relative z-10 max-w-4xl mx-auto text-center">
+    <p class="font-display font-semibold text-lg md:text-xl mb-3 rise-in" style="animation-delay:.05s; color:var(--teal-deep)">
+      Пузатые, тёплые, свежие каждое утро
+    </p>
+    <h1 class="font-display font-extrabold text-5xl xs:text-6xl sm:text-7xl md:text-8xl leading-[0.95] mb-6 rise-in break-words" style="animation-delay:.15s">
+      <span style="color:var(--fuchsia)">Дра</span><span style="color:var(--teal-deep)">Пончики</span>
+    </h1>
+    <p class="font-semibold text-lg md:text-2xl max-w-xl mx-auto mb-10 text-[#3A2233]/80 rise-in" style="animation-delay:.3s">
+      Дракончик, который печёт пончики вместо того, чтобы жечь деревни. Заходи — он делится.
+    </p>
+
+    <!-- interactive hero dragon -->
+    <div class="relative flex justify-center rise-in" style="animation-delay:.45s">
+      <!-- ЗАМЕНИТЕ src на путь/URL своего фото дракона -->
+      <img id="hero-dragon" src="https://placehold.co/400x400/7DD8D3/2D3B3A?text=Фото+дракона" alt="ДраПончики — дракончик"
+           class="w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 max-w-full rounded-full object-cover border-4 border-white/70 puffy-shadow-teal cursor-pointer select-none">
+      <span class="absolute -bottom-2 font-display font-semibold text-sm text-[#3A2233]/50">жми на меня ✨</span>
+    </div>
+  </div>
+</section>
+
+<!-- wavy divider -->
+<div class="relative -mt-1">
+  <svg class="blob-divider" viewBox="0 0 1440 90" preserveAspectRatio="none"><path d="M0,32 C240,80 480,0 720,24 C960,48 1200,88 1440,40 L1440,90 L0,90Z" fill="#FFFBF5"/></svg>
+</div>
+
+<!-- ===================== ABOUT ===================== -->
+<section id="about" class="relative py-24 px-5 md:px-12" style="background:var(--cream)">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
+
+    <!-- asymmetric image/illustration block -->
+    <div class="relative">
+      <div class="absolute -top-8 -left-8 w-32 h-32 rounded-full opacity-70" style="background:var(--pink-bg-deep)"></div>
+      <div class="relative rounded-[2.5rem] p-6 sm:p-10 puffy-shadow-teal" style="background:var(--teal); transform: rotate(-2deg);">
+        <div class="bg-white/90 rounded-[2rem] p-4 sm:p-8 -rotate-2">
+          <!-- ЗАМЕНИТЕ src на путь/URL своего фото дракона -->
+          <img src="https://placehold.co/500x400/7DD8D3/2D3B3A?text=Фото+дракона" alt="ДраПончики — дракончик"
+               class="w-full h-auto rounded-2xl object-cover aspect-[5/4]">
+          <p class="font-display font-bold text-center mt-3" style="color:var(--fuchsia)">пончики.дракон.счастье</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="font-display font-extrabold text-4xl md:text-5xl mb-6" style="color:var(--fuchsia)">
+        Жил-был дракончик, который не любил жечь
+      </h2>
+      <p class="text-lg leading-relaxed mb-4 text-[#3A2233]/80">
+        Все драконы в округе воровали золото и пугали деревни. Наш — маленький, бирюзовый и вечно голодный — решил, что печь пончики интереснее, чем разрушать замки. Так появились <span class="font-bold" style="color:var(--teal-deep)">ДраПончики</span>.
+      </p>
+      <p class="text-lg leading-relaxed mb-8 text-[#3A2233]/80">
+        Каждое утро он разжигает духовку своим дыханием (аккуратно, только для теста), а мы раскатываем, крутим и обсыпаем то, что получилось, до хрустящей корочки и мягкой серединки.
+      </p>
+      <div class="flex gap-6">
+        <div class="rounded-3xl bg-[var(--pink-bg)] px-6 py-5 text-center flex-1">
+          <p class="font-display font-extrabold text-3xl" style="color:var(--fuchsia)">14</p>
+          <p class="text-sm font-semibold text-[#3A2233]/70">видов пончиков</p>
+        </div>
+        <div class="rounded-3xl px-6 py-5 text-center flex-1" style="background:#E6FFFB">
+          <p class="font-display font-extrabold text-3xl" style="color:var(--teal-deep)">05:30</p>
+          <p class="text-sm font-semibold text-[#3A2233]/70">первая партия</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRODUCTS ===================== -->
+<section id="products" class="relative py-24 px-5 md:px-12" style="background:var(--pink-bg)">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <h2 class="font-display font-extrabold text-4xl md:text-5xl mb-3" style="color:var(--fuchsia)">Выбери свой пончик</h2>
+      <p class="text-lg text-[#3A2233]/70">Нажми на пончик — он раскроется и покажет, чем хорош</p>
+    </div>
+
+    <!-- сетка карточек-плейсхолдеров под фото -->
+    <div id="donut-row" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6"></div>
+  </div>
+</section>
+
+<!-- wavy divider -->
+<div class="relative">
+  <svg class="blob-divider" viewBox="0 0 1440 90" preserveAspectRatio="none"><path d="M0,50 C240,10 480,90 720,60 C960,30 1200,10 1440,50 L1440,90 L0,90Z" fill="#0E8A83"/></svg>
+</div>
+
+<!-- ===================== LOCATIONS ===================== -->
+<section id="locations" class="relative py-24 px-5 md:px-12" style="background:var(--teal-deep)">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+
+    <div class="text-white">
+      <h2 class="font-display font-extrabold text-4xl md:text-5xl mb-6">Где нас найти</h2>
+      <div class="space-y-5 font-semibold text-lg">
+        <div class="flex gap-4 items-start">
+          <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">📍</div>
+          <p>ул. Пекарная, 12 — фургон у парка, ищи розовую крышу</p>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">🕒</div>
+          <p>Каждый день, 8:00 — 20:00, кроме понедельника (дракон отсыпается)</p>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">☎️</div>
+          <p>+7 (900) 123-45-67 — принимаем заказы на компании</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- stylized contour map -->
+    <div class="rounded-[2.5rem] bg-white/10 p-6 puffy-shadow">
+      <svg viewBox="0 0 300 220" class="w-full h-auto">
+        <rect x="0" y="0" width="300" height="220" rx="24" fill="#0B6F69"/>
+        <path d="M10 60 Q80 30 150 55 T290 45" stroke="#FBCFE8" stroke-width="3" fill="none" opacity="0.5"/>
+        <path d="M10 120 Q90 150 160 120 T290 130" stroke="#FBCFE8" stroke-width="3" fill="none" opacity="0.4"/>
+        <path d="M10 175 Q100 200 180 170 T290 185" stroke="#FBCFE8" stroke-width="3" fill="none" opacity="0.35"/>
+        <circle cx="150" cy="105" r="10" fill="#EC4899"/>
+        <circle cx="150" cy="105" r="16" fill="none" stroke="#EC4899" stroke-width="2" opacity="0.5"/>
+        <text x="150" y="140" text-anchor="middle" fill="#FBCFE8" font-size="12" font-family="Nunito, sans-serif" font-weight="700">ул. Пекарная, 12</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="py-10 px-5 md:px-12 text-center" style="background:#083F3B">
+  <p class="font-display font-semibold text-white/70">© 2026 ДраПончики. Испечено с огнём, но без разрушений.</p>
+</footer>
+
+<script>
+/* ============ DATA: donuts ============ */
+// ЗАМЕНИТЕ поле photo на путь/URL к своему фото пончика для каждой карточки
+const donuts = [
+  { name: "Розовый Пыхтун", color: "#EC4899", photo:"https://placehold.co/400x400/EC4899/ffffff?text=Фото+1", desc: "Классика с розовой глазурью и облаком сахарной пудры. Первая любовь дракончика.", emoji:"💗" },
+  { name: "Бирюзовый Дымок", color:"#22B8B0", photo:"https://placehold.co/400x400/22B8B0/ffffff?text=Фото+2", desc: "Мятная глазурь и хрустящая кокосовая стружка. Освежает даже после огненного завтрака.", emoji:"🌊" },
+  { name: "Огненный Малыш", color:"#F5A65B", photo:"https://placehold.co/400x400/F5A65B/ffffff?text=Фото+3", desc: "С корицей и карамельной крошкой — острый привет от драконьего характера.", emoji:"🔥" },
+  { name: "Шоколадный Клык", color:"#7B4B3A", photo:"https://placehold.co/400x400/7B4B3A/ffffff?text=Фото+4", desc: "Тёмный шоколад и кусочки печенья. Кусается, но приятно.", emoji:"🍫" },
+  { name: "Лимонный Хвостик", color:"#D4AF16", photo:"https://placehold.co/400x400/F2D24B/2D3B3A?text=Фото+5", desc: "Цитрусовая глазурь и цедра — бодрит лучше утреннего рёва.", emoji:"🍋" },
+];
+
+const row = document.getElementById('donut-row');
+
+donuts.forEach((d, i) => {
+  const card = document.createElement('div');
+  card.className = "donut-card relative";
+
+  card.innerHTML = `
+    <div class="relative rounded-[1.75rem] overflow-hidden puffy-shadow aspect-square bg-white">
+      <img src="${d.photo}" alt="${d.name}" class="w-full h-full object-cover">
+
+      <!-- кнопка "i" -->
+      <button class="info-btn absolute top-2 right-2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 text-[#3A2233] font-display font-extrabold flex items-center justify-center shadow-md active:scale-90 transition-transform" aria-label="Информация о ${d.name}">
+        i
+      </button>
+
+      <!-- оверлей с информацией -->
+      <div class="info-overlay absolute inset-0 flex flex-col items-center justify-center text-center p-4 opacity-0 pointer-events-none transition-opacity duration-300" style="background:${d.color}f2;">
+        <button class="close-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-white/25 text-white font-display font-extrabold flex items-center justify-center" aria-label="Закрыть">✕</button>
+        <p class="font-display font-extrabold text-white text-base sm:text-lg mb-2">${d.name}</p>
+        <p class="text-white/95 text-xs sm:text-sm mb-3 leading-snug">${d.desc}</p>
+        <button class="want-btn font-display font-bold text-sm rounded-full px-4 py-2 bg-white active:scale-90 hover:scale-105 transition-transform" style="color:${d.color};">
+          Хочу! ${d.emoji}
+        </button>
+      </div>
+    </div>
+    <p class="font-display font-bold text-center mt-2 text-sm sm:text-base leading-tight" style="color:${d.color}">${d.name}</p>
+  `;
+
+  const overlay = card.querySelector('.info-overlay');
+  const openOverlay = () => {
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'auto';
+  };
+  const closeOverlay = () => {
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+  };
+
+  card.querySelector('.info-btn').addEventListener('click', openOverlay);
+  card.querySelector('.close-btn').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeOverlay();
+  });
+  card.querySelector('.want-btn').addEventListener('click', (e) => {
+    burstConfetti(e.clientX, e.clientY, [d.color, '#DB2777', '#FBCFE8']);
+    const btn = e.currentTarget;
+    const original = btn.textContent;
+    btn.textContent = "Уже пекём! 🧑‍🍳";
+    setTimeout(()=> { btn.textContent = original; closeOverlay(); }, 1600);
+  });
+
+  row.appendChild(card);
+});
+
+/* ============ HEADER SHRINK ON SCROLL ============ */
+const header = document.getElementById('site-header');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) header.classList.add('shrink');
+  else header.classList.remove('shrink');
+});
+
+/* ============ HERO DRAGON: click bounce + confetti ============ */
+const heroDragon = document.getElementById('hero-dragon');
+heroDragon.addEventListener('click', (e) => {
+  heroDragon.style.transition = 'transform .25s ease';
+  heroDragon.style.transform = 'scale(0.92) rotate(-3deg)';
+  setTimeout(()=> heroDragon.style.transform = 'scale(1) rotate(0deg)', 220);
+  burstConfetti(e.clientX, e.clientY, ['#F5A65B','#EC4899','#22B8B0','#FBCFE8']);
+});
+
+/* ============ HEADER DRAGON EASTER EGG: confetti burst ============ */
+const headerDragonWrap = document.getElementById('header-dragon-wrap');
+headerDragonWrap.addEventListener('click', (e) => {
+  const rect = headerDragonWrap.getBoundingClientRect();
+  burstConfetti(rect.left + rect.width/2, rect.top + rect.height/2, ['#EC4899','#22B8B0','#F5A65B','#FBCFE8'], 22);
+});
+
+/* ============ CONFETTI ENGINE ============ */
+function burstConfetti(x, y, colors, count = 16){
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+  for (let i = 0; i < count; i++){
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const color = colors[Math.floor(Math.random()*colors.length)];
+    const isDonut = Math.random() < 0.35;
+    if (isDonut){
+      piece.style.width = '14px';
+      piece.style.height = '14px';
+      piece.style.borderRadius = '50%';
+      piece.style.background = color;
+      piece.style.boxShadow = `inset 0 0 0 4px #FFFBF5`;
+    } else {
+      piece.style.background = color;
+      piece.style.width = (6 + Math.random()*6) + 'px';
+      piece.style.height = (6 + Math.random()*6) + 'px';
+      piece.style.borderRadius = Math.random() < 0.5 ? '50%' : '3px';
+    }
+    piece.style.left = x + 'px';
+    piece.style.top = y + 'px';
+    document.body.appendChild(piece);
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = 80 + Math.random() * 140;
+    const dx = Math.cos(angle) * velocity;
+    const dy = Math.sin(angle) * velocity - 60;
+    const rotation = (Math.random() - 0.5) * 720;
+    const duration = 700 + Math.random() * 500;
+
+    piece.animate([
+      { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${dx}px, ${dy + 220}px) rotate(${rotation}deg)`, opacity: 0 }
+    ], { duration, easing: 'cubic-bezier(.2,.7,.3,1)', fill:'forwards' });
+
+    setTimeout(()=> piece.remove(), duration + 50);
+  }
+}
+</script>
+</body>
+</html>
